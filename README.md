@@ -2,13 +2,17 @@
 A dynamic IP service for IoT device - connect to your device by host name 
 
 # Installation 
->client : apt-get install efwat -i <network_interface> -s <server_address> 
-  - default sets to active interface and efwat server 
+git clone for this project
 
->server : npm install efwat-server
+** will be installed as apt-get package  in the future 
+>client : sudo bash install.sh  -i <network_interface> -s <server_address> 
+  - default sets to active interface and efwat server 
+  
+** will be npm installed in the future
+>server : npm install efwat-server 
 
 # Usage
->efwat provide a default implementation of a secure DNS wrap of Amazon Route53
+>efwat provide a default implementation of a secure DNS wrap for Amazon Route53
 
 efwat consists of client and server side : 
 
