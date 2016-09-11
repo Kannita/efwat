@@ -54,7 +54,7 @@ else
 fi
 
 if [ -z "$SERVER_PARAM" ]; then
-    SERVER="http://efwatns1.efwat.com"
+    SERVER="52.209.72.167"
 else
     SERVER=$SERVER_PARAM
 fi

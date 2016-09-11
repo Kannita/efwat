@@ -2,9 +2,9 @@
 # which the user is the device id and password should be randomly created
 
 #curl -k -X POST http://efwatns1.efwat.com:3000/authenticate -d host=$1 -d pass=$2
-mosquitto_sub -h '52.209.72.167' -p 1883 -t "authenticate_"$HOST > token &
+mosquitto_sub -h '52.209.72.167' -p 1883 -t "authenticate_"$1 > token &
 
-mosquitto_pub -h '52.209.72.167' -p 1883 -m '{"host":"'"$HOST"'","pass":"'"$PASS"'"}' -t "authenticate"
+mosquitto_pub -h '52.209.72.167' -p 1883 -m '{"host":"'"$1"'","pass":"'"$2"'"}' -t "authenticate"
 
 cat token
 rm res

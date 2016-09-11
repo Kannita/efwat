@@ -96,7 +96,7 @@ mqtt_client.subscribe('authenticate',function(topic,message){
             if (err) throw err;
 
             if (!user) {
-                res.status(403).send();
+                mqtt_client.publish('authenticate_' + host, JSON.stringify({"success": false}))
             } else if (user) {
 
                 // check if password matches
