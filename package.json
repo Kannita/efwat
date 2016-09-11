@@ -11,6 +11,8 @@
     "jsonwebtoken": "^7.1.6",
     "mongoose": "^4.5.7",
     "morgan": "^1.7.0",
+    "mosca": "^2.1.0",
+    "mqtt": "^1.14.1",
     "nice-route53": "^1.0.3"
   },
   "devDependencies": {},

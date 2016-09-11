@@ -8,6 +8,7 @@ var dns         = require('./dns.js');
 var User         = require('./user.js')
 var security     = require('./security.js');
 var configuration = require('./configuration.js')
+var mqtt_client   = require('./mqtt/mqtt-client.js')
 
 var app = express();
 
@@ -54,10 +55,121 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: false
 }));
-
 app.use(morgan('dev'));
 
 app.use('/api',apiRoutes);
+
+mqtt_client.subscribe('register',function(topic,message){
+    console.log('register topic handler');
+    if(topic == 'register'){
+        var req = JSON.parse(message)
+        var password = req.pass ;
+        var host = req.host;
+
+        if(host &&  password ){
+            User.create({
+                host: host,
+                password: security.encrypt(password)
+            }, function(err,user){
+                if(err){
+                    mqtt_client.publish('register_'+ host,JSON.stringify({"success":false}))
+                    console.log('error while saving user, user might be exist')
+                } else {
+                    mqtt_client.publish('register_'+ host,JSON.stringify({"success":true}))
+                }
+                mqtt_client.unsubscribe('register_'+ host,function(err){console.log('unsubscribe from host ' + host)})
+            });
+        }
+    }
+})
+
+mqtt_client.subscribe('authenticate',function(topic,message){
+    if(topic == 'authenticate') {
+
+        var req = JSON.parse(message)
+        var password = req.pass;
+        var host = req.host;
+
+        User.findOne({
+            host: host
+        }, function (err, user) {
+            if (err) throw err;
+
+            if (!user) {
+                res.status(403).send();
+            } else if (user) {
+
+                // check if password matches
+                if (security.decrypt(user.password) != password) {
+                    mqtt_client.publish('authenticate_' + host, JSON.stringify({"success": false}))
+                } else {
+
+                    var token = jwt.sign(user, app.get('superSecret'), {
+                        expiresIn: 1440 * 100000 // expires never
+                    });
+
+                    mqtt_client.publish('authenticate_' + host, JSON.stringify({"success": true, "token": token}))
+                }
+                mqtt_client.unsubscribe('authenticate_'+ host,function(){console.log('unsubscribe from host ' + host)})
+            }
+
+        });
+    }
+})
+
+mqtt_client.subscribe('update_record',function(topic,message){
+    if(topic == 'update_record') {
+        var req = JSON.parse(message)
+
+        auth_middleware(req.token)
+        .then(function() {
+            var newIp = req.newIp;
+            var hostName = req.host;
+
+            // Update DNS
+            console.log('updating dns with ' + hostName + " ip :" + newIp)
+           /* dns.updateIpRecord(hostName, newIp)
+                .then(function (updateRes) {
+                    if (updateRes.err) {
+                        console.log('error occurred', updateRes.err);
+                        mqtt_client.publish('update_record_' + host, JSON.stringify({
+                            success: false,
+                            error: updateRes.err
+                        }))
+                        return;
+                    }
+
+                    mqtt_client.publish('update_record_' + host, JSON.stringify({success: true}))
+                })*/
+
+        })
+        .catch(function(err){
+            console.log('token was not verified', err);
+            mqtt_client.publish('update_record_' + host, JSON.stringify({success: false}))
+            mqtt_client.unsubscribe('update_record_'+ host,function(){console.log('unsubscribe from host ' + host)})
+        })
+    }
+})
+
+function auth_middleware(token){
+
+    return new Promise(function(resolve,reject){
+        if (token) {
+            // verifies secret and checks exp
+            jwt.verify(token, app.get('superSecret'), function(err, decoded) {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve()
+                }
+            });
+        } else {
+            reject();
+        }
+    })
+
+
+}
 
 app.post('/api/update', function (req, res) {
 
