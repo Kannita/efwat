@@ -7,6 +7,8 @@ sudo cp ip-checker.sh /etc/efwat/ip-checker.sh
 sudo chmod a+x /etc/efwat/token_fetcher.sh
 sudo chmod a+x /etc/efwat/ip-checker.sh
 
+#sudo apt-get install mosquitto-clients
+
 cd /etc/efwat
 
 while [[ $# -gt 1 ]]
@@ -19,6 +21,10 @@ case $key in
     ;;
     -s|--serveradress)
     SERVER_PARAM="$2"
+    shift # past argument
+    ;;
+    -p|--port)
+    PORT_PARAM="$2"
     shift # past argument
     ;;
     *)
@@ -48,9 +54,15 @@ else
 fi
 
 if [ -z "$SERVER_PARAM" ]; then
-    SERVER="http://efwatns1.efwat.com:3000"
+    SERVER="http://efwatns1.efwat.com"
 else
     SERVER=$SERVER_PARAM
+fi
+
+if [ -z "$PORT_PARAM" ]; then
+    PORT=1883
+else
+    PORT=$PORT_PARAM
 fi
 
 echo "$TODATE [$(date +%T)]: Working with device interface $INTERFACE" >> $SCRIPTLOG
@@ -69,10 +81,11 @@ echo "$TODATE [$(date +%T)]: * Mac address : $HOST" >> $SCRIPTLOG
 echo "$TODATE [$(date +%T)]: * Password Has Been Generated" >> $SCRIPTLOG
 echo "$TODATE [$(date +%T)]: * Registering Device To efwhat Service" >> $SCRIPTLOG
 
-curl -k -X POST $SERVER/register -d host=$HOST -d pass=$PASS
+mosquitto_pub -h $SERVER -p $PORT -m '{"host":"'"$HOST"'","pass":"'"$PASS"'"}' -t "register"
+
+#add mosquitto subscribe for a privte chanell if needed
 
 # run script to get token and store it in token file
-
 echo "$TODATE [$(date +%T)]: * Token Been Received" >> $SCRIPTLOG
 
 TOKEN=$(sudo bash token_fetcher.sh $HOST $PASS)
@@ -80,7 +93,7 @@ TOKEN=$(sudo bash token_fetcher.sh $HOST $PASS)
 echo "$TODATE [$(date +%T)]: * Registering device to efwhat dns" >> $SCRIPTLOG
 
 # register device ip to efwat service
-curl -k -X POST $SERVER/api/update -d host=$HOST -d newIp=$IP -d token=$TOKEN
+mosquitto_pub -h $SERVER -p $PORT -m '{"host":"'"$HOST"'","token":"'"$TOKEN"'","newIp":"'"$IP"'"}' -t "register"
 
 echo "$TODATE [$(date +%T)]: * Installing Ip checker daemon" >> $SCRIPTLOG
 echo "$TODATE [$(date +%T)]: * Ensuring DHCP hooks" >> $SCRIPTLOG
@@ -88,6 +101,7 @@ echo "ip : $IP , token : $TOKEN, host;$HOST, pass:$PASS"
 
 echo "TOKEN=$TOKEN" >> config
 echo "SERVER=$SERVER" >> config
+echo "PORT=$PORT" >> config
 echo "PASS=$PASS" >> config
 echo "INTERFACE=$INTERFACE" >> config
 

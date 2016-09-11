@@ -21,6 +21,7 @@ fi
 source /etc/efwat/config
 SERVER_PARAM=$SERVER
 INTERFACE_PARAM=$INTERFACE
+PORT=$PORT
 sudo echo $(ifconfig INTERFACE_PARAM | awk '/inet addr/{print substr($2,6)}') > newip
 
 NEWIP=$(cat newip)
@@ -35,6 +36,9 @@ if [ ! "$NEWIP" == "$OLDIP" ] ; then
     HOST=$(cat host)
     echo "$TODATE [$(date +%T)]: * Sending IP ip update to efwat" >> $SCRIPTLOG
     curl -k -X POST $SERVER_PARAM/api/update -d host=$HOST -d newIp=$NEWIP -d token=$TOKEN
+
+    mosquitto_pub -h '52.209.72.167' -p 1883 -m '{"host":"'"$HOST"'","token":"'"$TOKEN"'","newIP":"'"$NEWIP"'"}' -t "update_record"
+
     # if token is out of date then first get a new token and then do the action
 fi
 

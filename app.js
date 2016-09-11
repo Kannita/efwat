@@ -108,7 +108,7 @@ mqtt_client.subscribe('authenticate',function(topic,message){
                         expiresIn: 1440 * 100000 // expires never
                     });
 
-                    mqtt_client.publish('authenticate_' + host, JSON.stringify({"success": true, "token": token}))
+                    mqtt_client.publish('authenticate_' + host, token)
                 }
                 mqtt_client.unsubscribe('authenticate_'+ host,function(){console.log('unsubscribe from host ' + host)})
             }
@@ -127,8 +127,8 @@ mqtt_client.subscribe('update_record',function(topic,message){
             var hostName = req.host;
 
             // Update DNS
-            console.log('updating dns with ' + hostName + " ip :" + newIp)
-           /* dns.updateIpRecord(hostName, newIp)
+           console.log('updating dns with ' + hostName + " ip :" + newIp)
+           dns.updateIpRecord(hostName, newIp)
                 .then(function (updateRes) {
                     if (updateRes.err) {
                         console.log('error occurred', updateRes.err);
@@ -140,7 +140,7 @@ mqtt_client.subscribe('update_record',function(topic,message){
                     }
 
                     mqtt_client.publish('update_record_' + host, JSON.stringify({success: true}))
-                })*/
+            })
 
         })
         .catch(function(err){
