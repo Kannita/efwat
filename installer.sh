@@ -89,11 +89,11 @@ mosquitto_pub -h $SERVER -p $PORT -m '{"host":"'"$HOST"'","pass":"'"$PASS"'"}' -
 echo "$TODATE [$(date +%T)]: * Token Been Received" >> $SCRIPTLOG
 
 TOKEN=$(sudo bash token_fetcher.sh $HOST $PASS)
-
+echo "token recived $TOKEN"
 echo "$TODATE [$(date +%T)]: * Registering device to efwhat dns" >> $SCRIPTLOG
 
 # register device ip to efwat service
-mosquitto_pub -h $SERVER -p $PORT -m '{"host":"'"$HOST"'","token":"'"$TOKEN"'","newIp":"'"$IP"'"}' -t "register"
+mosquitto_pub -h $SERVER -p $PORT -m '{"host":"'"$HOST"'","token":"'"$TOKEN"'","newIp":"'"$IP"'"}' -t "update_record"
 
 echo "$TODATE [$(date +%T)]: * Installing Ip checker daemon" >> $SCRIPTLOG
 echo "$TODATE [$(date +%T)]: * Ensuring DHCP hooks" >> $SCRIPTLOG
