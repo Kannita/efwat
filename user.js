@@ -1,5 +1,4 @@
 
-
 var mongoose = require('mongoose');
 
 mongoose.connect('localhost', 'fwhat');
@@ -12,3 +11,4 @@ module.exports = mongoose.model('User', new Schema({
     host : String ,
     token : String
 }));
+
