@@ -7,6 +7,6 @@ mosquitto_sub -h '52.209.72.167' -p 1883 -t "authenticate_"$1 > token &
 mosquitto_pub -h '52.209.72.167' -p 1883 -m '{"host":"'"$1"'","pass":"'"$2"'"}' -t "authenticate"
 
 cat token
-rm res
+rm token
 exit 0
 
