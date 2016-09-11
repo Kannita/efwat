@@ -7,8 +7,8 @@ A dynamic IP service for IoT device - connect to your device by host name over M
   - default sets to active interface and efwat server 
 
 >server : npm install efwat-server
->  MQTT - Broker - functiosn as pub/sub for client and server commuinications 
->  Express.js server which functions as statnd alone server or a a mqtt client 
+  - MQTT - Broker - functiosn as pub/sub for client and server commuinications 
+  - Express.js server which functions as statnd alone server or a a mqtt client 
 
 # Usage
 >efwat provide a default implementation of a secure DNS wrap of Amazon Route53
