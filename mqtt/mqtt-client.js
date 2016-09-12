@@ -1,7 +1,11 @@
 (function(){
     var mqtt = require('mqtt')
+    var configuraion = require('./../configuration.js')
+
+    var host = configuraion.getKey('EFWHAT_SERVER')
     console.log('connecting to mqtt')
-    var client = mqtt.connect({ host: '52.209.72.167', port: 1883 });
+    console.log(host);
+    var client = mqtt.connect({ host: host, port: 1883 });
 
     function subscribe(topic,cb){
         client.subscribe(topic);
@@ -19,10 +23,10 @@
         client.unsubscribe(topic,cb);
     }
 
-     module.exports = {
-            publish : publish,
-            subscribe : subscribe,
-            unsubscribe: unsubscribe
+    module.exports = {
+        publish : publish,
+        subscribe : subscribe,
+        unsubscribe: unsubscribe
     }
 
 })()

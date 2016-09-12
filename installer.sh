@@ -7,7 +7,7 @@ sudo cp ip-checker.sh /etc/efwat/ip-checker.sh
 sudo chmod a+x /etc/efwat/token_fetcher.sh
 sudo chmod a+x /etc/efwat/ip-checker.sh
 
-#sudo apt-get install mosquitto-clients
+sudo apt-get install mosquitto-clients
 
 cd /etc/efwat
 
@@ -70,7 +70,7 @@ echo "$TODATE [$(date +%T)]: Working with server $SERVER" >> $SCRIPTLOG
 
 HOST=$(sudo cat /sys/class/net/$INTERFACE/address | tr : -)
 PASS=$(date| sha256sum | base64 | head -c 32)
-
+RANDOM=$(date| sha256sum | base64 | head -c 32)
 echo "interface : $INTERFACE"
 echo "server : $SERVER"
 
@@ -81,7 +81,7 @@ echo "$TODATE [$(date +%T)]: * Mac address : $HOST" >> $SCRIPTLOG
 echo "$TODATE [$(date +%T)]: * Password Has Been Generated" >> $SCRIPTLOG
 echo "$TODATE [$(date +%T)]: * Registering Device To efwhat Service" >> $SCRIPTLOG
 
-mosquitto_pub -h $SERVER -p $PORT -m '{"host":"'"$HOST"'","pass":"'"$PASS"'"}' -t "register"
+mosquitto_pub -h $SERVER -p $PORT -m '{"host":"'"$HOST"'","pass":"'"$PASS"'","random":"'"$RANDOM"'"}' -t "register"
 
 #add mosquitto subscribe for a privte chanell if needed
 
@@ -93,7 +93,7 @@ echo "token recived $TOKEN"
 echo "$TODATE [$(date +%T)]: * Registering device to efwhat dns" >> $SCRIPTLOG
 
 # register device ip to efwat service
-mosquitto_pub -h $SERVER -p $PORT -m '{"host":"'"$HOST"'","token":"'"$TOKEN"'","newIp":"'"$IP"'"}' -t "update_record"
+mosquitto_pub -h $SERVER -p $PORT -m '{"host":"'"$HOST"'","token":"'"$TOKEN"'","newIp":"'"$IP"'","random":"'"$RANDOM"'"}' -t "update_record"
 
 echo "$TODATE [$(date +%T)]: * Installing Ip checker daemon" >> $SCRIPTLOG
 echo "$TODATE [$(date +%T)]: * Ensuring DHCP hooks" >> $SCRIPTLOG

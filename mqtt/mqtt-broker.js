@@ -1,8 +1,15 @@
 (function(){
     var mosca = require('mosca')
 
+    var SECURE_KEY = __dirname + '/../tsl/host.key';
+    var SECURE_CERT = __dirname  +'/../tsl/host.crt';
+
     var settings = {
-        port: 1883
+        port: 1883,
+        secure : {
+            keyPath: SECURE_KEY,
+            certPath: SECURE_CERT
+        }
     };
 
     var server = new mosca.Server(settings);

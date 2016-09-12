@@ -1,12 +1,11 @@
-var express = require('express');
+var express     = require('express');
 var morgan      = require('morgan');
 var cors        = require('cors');
 var bodyParser  = require('body-parser');
 var jwt         = require('jsonwebtoken')
-
 var dns         = require('./dns.js');
-var User         = require('./user.js')
-var security     = require('./security.js');
+var User        = require('./user.js')
+var security    = require('./security.js');
 var configuration = require('./configuration.js')
 var mqtt_client   = require('./mqtt/mqtt-client.js')
 
@@ -72,12 +71,12 @@ mqtt_client.subscribe('register',function(topic,message){
                 password: security.encrypt(password)
             }, function(err,user){
                 if(err){
-                    mqtt_client.publish('register_'+ host,JSON.stringify({"success":false}))
+                    mqtt_client.publish('register_' + req.random,JSON.stringify({"success":false}))
                     console.log('error while saving user, user might be exist')
                 } else {
-                    mqtt_client.publish('register_'+ host,JSON.stringify({"success":true}))
+                    mqtt_client.publish('register_'+ req.random,JSON.stringify({"success":true}))
                 }
-                mqtt_client.unsubscribe('register_'+ host,function(err){console.log('unsubscribe from host ' + host)})
+                mqtt_client.unsubscribe('register_'+ req.random,function(err){console.log('unsubscribe from host ' + host)})
             });
         }
     }
@@ -96,21 +95,21 @@ mqtt_client.subscribe('authenticate',function(topic,message){
             if (err) throw err;
 
             if (!user) {
-                mqtt_client.publish('authenticate_' + host, JSON.stringify({"success": false}))
+                mqtt_client.publish('authenticate_' + req.random, JSON.stringify({"success": false}))
             } else if (user) {
 
                 // check if password matches
                 if (security.decrypt(user.password) != password) {
-                    mqtt_client.publish('authenticate_' + host, JSON.stringify({"success": false}))
+                    mqtt_client.publish('authenticate_' + req.random, JSON.stringify({"success": false}))
                 } else {
 
                     var token = jwt.sign(user, app.get('superSecret'), {
                         expiresIn: 1440 * 100000 // expires never
                     });
 
-                    mqtt_client.publish('authenticate_' + host, token)
+                    mqtt_client.publish('authenticate_' + req.random, token)
                 }
-                mqtt_client.unsubscribe('authenticate_'+ host,function(){console.log('unsubscribe from host ' + host)})
+                mqtt_client.unsubscribe('authenticate_'+ req.random,function(){console.log('unsubscribe from host ' + host)})
             }
 
         });
@@ -132,21 +131,21 @@ mqtt_client.subscribe('update_record',function(topic,message){
                 .then(function (updateRes) {
                     if (updateRes.err) {
                         console.log('error occurred', updateRes.err);
-                        mqtt_client.publish('update_record_' + host, JSON.stringify({
+                        mqtt_client.publish('update_record_' + req.random, JSON.stringify({
                             success: false,
                             error: updateRes.err
                         }))
                         return;
                     }
 
-                    mqtt_client.publish('update_record_' + host, JSON.stringify({success: true}))
+                    mqtt_client.publish('update_record_' + req.random, JSON.stringify({success: true}))
             })
 
         })
         .catch(function(err){
             console.log('token was not verified', err);
-            mqtt_client.publish('update_record_' + host, JSON.stringify({success: false}))
-            mqtt_client.unsubscribe('update_record_'+ host,function(){console.log('unsubscribe from host ' + host)})
+            mqtt_client.publish('update_record_' + req.random, JSON.stringify({success: false}))
+            mqtt_client.unsubscribe('update_record_'+ req.random,function(){console.log('unsubscribe from host ' + host)})
         })
     }
 })

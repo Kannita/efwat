@@ -7,5 +7,4 @@
             return configuration[key];
         }
     }
-
 })()
